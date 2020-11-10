@@ -52,13 +52,8 @@ for row in f:
     y.append(encoder(split_row[-1]))
     X.append([np.array(split_row[:-1]).astype(np.float)])
 
-print(X[0])
-print(y[0])
-
 permutations = np.random.permutation(len(X))
-
 X, y = np.asarray(X).squeeze(), np.asarray(y)
-
 X = X[permutations, :]
 y = y[permutations]
 
@@ -71,19 +66,7 @@ len_test = len(X) // 5
 len_train = len(X) - len_test
 X_test, y_test, X_train, y_train = X[:len_test, :], y[:len_test], X[len_test:, :], y[len_test:]
 
-
-print("Shape of X matrix is: " + str(X.shape))
-print("Shape of y matrix is: " + str(y.shape))
-print("Shape of X_test matrix is: " + str(X.shape))
-print("Shape of y_test matrix is: " + str(X.shape))
-print("Shape of X_train matrix is: " + str(X.shape))
-print("Shape of y_train matrix is: " + str(X.shape))
-
-print("Desired samples feature vector: " + str(X[2]))
-print("Desired samples ground truth: " + str(y[2]))
-
 betas = np.random.random(X.shape[1]).reshape(1, -1)
-
 
 train_error_hist = list()
 test_error_hist = list()
@@ -107,18 +90,15 @@ while iteration_counter < n_iterations:
         y_hat = sigmoid(np.dot(X_test, betas.T))
         test_error_hist.append(logloss(y_hat, y_test) / len(y_test))
         test_acc_hist.append(np.mean((predict_with_output(y_hat) == y_test.reshape(-1, 1)) * 1))
-          
         iteration_counter += 1
-        
+
     current_average = np.mean(train_error_hist[-n_batches:])
-        
     if np.abs(prev_average - current_average) < min_delta:
         patience_counter += 1
     else:
         patience_counter = 0
         
     prev_average = current_average
-    
     if patience_counter == patience:
         break
 
@@ -128,6 +108,7 @@ plt.xlabel("#Iterations")
 plt.ylabel("Total Loss")
 plt.title("Loss vs Number of iterations")
 plt.legend(("Test error", "Train error"))
+plt.show()
 
 plt.plot(test_acc_hist)
 plt.xlabel("#Iterations")
