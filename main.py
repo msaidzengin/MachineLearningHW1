@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+sigmoid = lambda x : 1 / (1 + np.exp(-1 * x))
+hypothesis = lambda data, betas : sigmoid(np.dot(data,betas))
+
 def main():
     process('dataset/ionosphere/ionosphere.data', 35, 'g', 'b', 8)
     process('dataset/connectionistBench/sonar.all-data', 61, 'R', 'M', 16)
@@ -13,9 +16,9 @@ def process(filename, col, a, b, batch):
     iteration = range(100)
     for i in iteration:
         betas = np.zeros((train.shape[1],1))
-        betas, cost_history = iterateGradientDescent(train, trainResult, betas, i, batch)
-        testAcc.append(calculateAccuracy(betas, test, testResult))
-        trainAcc.append(calculateAccuracy(betas, train, trainResult))
+        betas, cost_history = gradientDescent(train, trainResult, betas, i, batch)
+        trainAcc.append(accuracy(betas, train, trainResult))
+        testAcc.append(accuracy(betas, test, testResult))
 
     plt.figure(figsize=(20,10))
     plt.suptitle(filename)
@@ -47,25 +50,11 @@ def prepare(filename, col, a, b):
 
     return train, trainResult, test, testResult
 
-def splitBatches(data, dataResults, batchSize):
-    split, results = [], []
-    count = data.shape[0] // batchSize
-    for i in range(count):
-        split.append(data[(i) * batchSize : (i+1) * batchSize, :])
-        results.append(dataResults[(i) * batchSize : (i+1) * batchSize, :])
-    return np.asarray(split), np.asarray(results), count
-
-def sigmoid(x):
-    return 1.0/(1.0 + np.exp(-1.0 * x))
-
-def hypothesis(data, betas):
-    return sigmoid(np.dot(data,betas))
-
-def calculateCost(data, dataResults, betas):
+def cost(data, dataResults, betas):
     m = data.shape[0]
     predicts = hypothesis(data, betas)
     cost = dataResults * np.log(predicts) + (1-dataResults) * np.log(1-predicts)
-    cost = cost.sum() / (-1*m)
+    cost = cost.sum() / (-m)
     return cost
 
 def updateBetas(data, dataResults, betas):
@@ -75,20 +64,28 @@ def updateBetas(data, dataResults, betas):
     betas = betas-gradient*( 0.1 / m ) # learningRate is 0.1
     return betas
 
-def iterateGradientDescent(data, dataResults, betas, maxIterationNo, batch):
+def batchSplit(data, dataResults, batchSize):
+    split, results = [], []
+    count = data.shape[0] // batchSize
+    for i in range(count):
+        split.append(data[(i) * batchSize : (i+1) * batchSize, :])
+        results.append(dataResults[(i) * batchSize : (i+1) * batchSize, :])
+    return np.asarray(split), np.asarray(results), count
+
+def gradientDescent(data, dataResults, betas, maxIterationNo, batch):
     cost_history = []
-    dataPartition, results, batchCount= splitBatches(data, dataResults, batch)
+    dataPartition, results, batchCount = batchSplit(data, dataResults, batch)
     for i in range(maxIterationNo):
         for j in range(batchCount):
             betas = updateBetas(dataPartition[j], results[j], betas)
-        cost_history.append(calculateCost(data,dataResults,betas))
-        if len(cost_history)>2 and ((cost_history[-2]-cost_history[-1]) < 0.001): # treshold is 0.001
+        cost_history.append(cost(data,dataResults, betas))
+        if len(cost_history) > 2 and ((cost_history[-2] - cost_history[-1]) < 0.001): # treshold is 0.001
             break
     return betas, cost_history
 
-def calculateAccuracy(beta, data, dataResults):
-    results=(hypothesis(data, beta) > 0.5).astype(int)
-    return np.sum(results==dataResults)/ dataResults.shape[0]
+def accuracy(beta, data, dataResults):
+    results = (hypothesis(data, beta) > 0.5).astype(int)
+    return np.sum(results == dataResults) / dataResults.shape[0]
 
 if __name__ == "__main__":
     main()
