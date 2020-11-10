@@ -1,11 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-sigmoid = lambda x : 1 / (1 + np.exp(-1 * x))
-hypothesis = lambda data, betas : sigmoid(np.dot(data,betas))
-
 def main():
-    process('dataset/ionosphere/ionosphere.data', 35, 'g', 'b', 8)
+    process('dataset/ionosphere/ionosphere.data', 35, 'g', 'b', 16)
     process('dataset/connectionistBench/sonar.all-data', 61, 'R', 'M', 16)
 
 def process(filename, col, a, b, batch):
@@ -23,11 +20,16 @@ def process(filename, col, a, b, batch):
     plt.figure(figsize=(20,10))
     plt.suptitle(filename)
     plt.subplot(2, 1, 1)
-    plt.title('Cost-Iteration')
+    plt.ylabel("Cost")
+    plt.title('Cost - Iteration')
     plt.plot(cost_history, label='cost')
+    plt.legend(loc='upper right')
     plt.subplot(2, 1, 2)
-    plt.title('Accuracy-Iteration')
-    plt.plot(iteration, trainAcc, label='acc')
+    plt.xlabel("Iterations")
+    plt.ylabel("Accuracy")
+    plt.title('Accuracy - Iteration')
+    plt.plot(iteration, trainAcc, label='train')
+    plt.plot(iteration, testAcc, label='test')
     plt.legend(loc='lower right')
     plt.show()
 
@@ -83,9 +85,9 @@ def gradientDescent(data, dataResults, betas, maxIterationNo, batch):
             break
     return betas, cost_history
 
-def accuracy(beta, data, dataResults):
-    results = (hypothesis(data, beta) > 0.5).astype(int)
-    return np.sum(results == dataResults) / dataResults.shape[0]
+sigmoid = lambda x : 1 / (1 + np.exp(-1 * x))
+hypothesis = lambda data, betas : sigmoid(np.dot(data,betas))
+accuracy = lambda beta, data, dataResults : np.sum((hypothesis(data, beta) > 0.5).astype(int) == dataResults) / dataResults.shape[0]
 
 if __name__ == "__main__":
     main()
