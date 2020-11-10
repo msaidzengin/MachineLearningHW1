@@ -53,18 +53,14 @@ def prepare(filename, col, a, b):
     return train, trainResult, test, testResult
 
 def cost(data, dataResults, betas):
-    m = data.shape[0]
     predicts = hypothesis(data, betas)
     cost = dataResults * np.log(predicts) + (1-dataResults) * np.log(1-predicts)
-    cost = cost.sum() / (-m)
-    return cost
+    return cost.sum() / (-data.shape[0])
 
 def updateBetas(data, dataResults, betas):
-    m = data.shape[0]
     predicts = hypothesis(data, betas)
     gradient = np.dot(np.transpose(data), predicts-dataResults)
-    betas = betas-gradient*( 0.1 / m ) # learningRate is 0.1
-    return betas
+    return betas-gradient*( 0.1 / data.shape[0] ) # learningRate is 0.1
 
 def batchSplit(data, dataResults, batchSize):
     split, results = [], []
